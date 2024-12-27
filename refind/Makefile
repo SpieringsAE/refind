@@ -30,6 +30,11 @@ ifeq ($(ARCH),aarch64)
   TARGET = refind_aa64.efi
 endif
 
+ifeq ($(ARCH),riscv64)
+  LIBEG = build
+  Target = refind_rv64.efi
+endif
+
 LOCAL_GNUEFI_CFLAGS  = -I$(SRCDIR) -I$(SRCDIR)/../include \
                        -I$(SRCDIR)/../libeg -I$(SRCDIR)/../mok
 LOCAL_LDFLAGS   = -L$(SRCDIR)/../libeg/ -L$(SRCDIR)/../mok/ \
