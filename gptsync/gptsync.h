@@ -45,7 +45,7 @@
 //
 
 
-#if defined(EFI32) || defined(EFIX64) || defined(EFIAARCH64)
+#if defined(EFI32) || defined(EFIX64) || defined(EFIAARCH64) || defined(EFIRISCV64)
 #define CONFIG_EFI
 #endif
 
