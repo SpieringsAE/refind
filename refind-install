@@ -293,6 +293,9 @@ DeterminePlatform() {
       aarch64)
          Platform="aa64"
          ;;
+      riscv64)
+         Platform="rv64"
+         ;;
       x86_64)
          Platform="x64"
          ;;
@@ -457,6 +460,7 @@ SetVarsForBoot() {
       TargetX64="bootx64.efi"
       TargetIA32="bootia32.efi"
       TargetAARCH64="bootaa64.efi"
+      TargetRISVCV64="bootriscv64.efi"
    else
       if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType == "shimx64.efi.signed" || $ShimType = "shimaa64.efi" ]] ; then
          TargetX64="grubx64.efi"
@@ -530,6 +534,7 @@ DetermineTargetDir() {
          TargetX64="refind_x64.efi"
          TargetIA32="refind_ia32.efi"
          TargetAARCH64="refind_aa64.efi"
+         TargetRISVCV64="refind_rv64.efi"
       fi
       Upgrade=1
    fi
@@ -674,6 +679,10 @@ CopyRefindFiles() {
       if [[ $? != 0 && $Platform == "aa64" ]] ; then
          Problems=1
       fi
+      cp "$RefindDir/refind_rv64.efi" "$InstallDir/$TargetDir/$TargetRISCV64" 2> /dev/null
+      if [[ $? != 0 && $Platform == "rv64" ]] ; then
+         Problems=1
+      fi
       if [[ "$ShimSource" != "none" ]] ; then
          TargetShim="bootx64.efi"
          CopyShimFiles
@@ -711,13 +720,18 @@ CopyRefindFiles() {
       if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
          SetupMacHfs $TargetX64
       fi
-   elif [[ $Platform == 'ia32' || $Platform == 'aa64' ]] ; then
+   elif [[ $Platform == 'ia32' || $Platform == 'aa64' || $Platform == 'rv64' ]] ; then
       if [[ $Platform == 'ia32' ]] ; then
          if ! cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32" ; then
             Problems=1
          fi
-      else
+      elif [[ $Platform == 'aa64' ]] ; then
          if ! cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64" ; then
+            Problems=1
+         fi
+      fi
+      elif [[ $Platform == 'rv64' ]] ; then
+         if ! cp "$RefindDir/refind_rv64.efi" "$InstallDir/$TargetDir/$TargetRISCV64" ; then
             Problems=1
          fi
       fi
@@ -818,6 +832,10 @@ CreateBootCsvFile() {
       fi
       if [[ "$Platform" == "aarch64" && -d "$InstallDir/$TargetDir" ]] ; then
          echo "$TargetAARCH64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+      if [[ "$Platform" == "riscv64" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetRISCV64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
    fi
